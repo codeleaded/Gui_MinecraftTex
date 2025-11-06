@@ -422,7 +422,7 @@ void TexturedTriangle(	int x1, int y1, float u1, float v1, float w1,
 					int suby = (int)id / 16;
 					Pixel sample = Sprite_SampleSub(tex,tex_u / tex_w, tex_v / tex_w,subx,suby,16,16);
 					//sample = Pixel_Mul(col,sample);
-					Draw(j,i,sample);
+					Point_Render(WINDOW_STD_ARGS,(Vec2){ j,i },sample);
 					pDepthBuffer[i*GetWidth() + j] = tex_w;
 				}
 				t += tstep;
@@ -475,7 +475,7 @@ void TexturedTriangle(	int x1, int y1, float u1, float v1, float w1,
 					int suby = (int)id / 16;
 					Pixel sample = Sprite_SampleSub(tex,tex_u / tex_w, tex_v / tex_w,subx,suby,16,16);
 					//sample = Pixel_Mul(col,sample);
-					Draw(j,i,sample);
+					Point_Render(WINDOW_STD_ARGS,(Vec2){ j,i },sample);
 					pDepthBuffer[i * GetWidth() + j] = tex_w;
 				}
 				t += tstep;
