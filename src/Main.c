@@ -9,47 +9,47 @@
 
 
 typedef struct Camera {
-	mat4x4 matProj;
-	vec3d vCamera;
-	vec3d vVelocity;
-	vec3d vLookDir;
+	M4x4D matProj;
+	Vec3D vCamera;
+	Vec3D vVelocity;
+	Vec3D vLookDir;
 	float fYaw;	
 	float fPitch;
-	vec3d vLength;
+	Vec3D vLength;
 } Camera;
 
-Camera Camera_New(vec3d p){
+Camera Camera_New(Vec3D p){
 	Camera c;
 	c.matProj = Matrix_MakeProjection(90.0f,(float)GetHeight() / (float)GetWidth(),0.1f,1000.0f);
 	c.vCamera = p;
-	c.vVelocity = (vec3d){ 0.0f,0.0f,0.0f,1.0f };
-	c.vLookDir = (vec3d){ 0.0f,0.0f,0.0f,1.0f };
+	c.vVelocity = (Vec3D){ 0.0f,0.0f,0.0f,1.0f };
+	c.vLookDir = (Vec3D){ 0.0f,0.0f,0.0f,1.0f };
 	c.fYaw = 0.0f;
 	c.fPitch = 0.0f;
-	c.vLength = (vec3d){ 0.0f,0.0f,0.0f,1.0f };
+	c.vLength = (Vec3D){ 0.0f,0.0f,0.0f,1.0f };
 	return c;
 }
 
 
 mesh meshCube;
-mat4x4 matProj;
-vec3d vCamera = { 10.0f,50.0f,10.0f,1.0f };
-vec3d vVelocity = { 0.0f,0.0f,0.0f,1.0f };
-vec3d vLookDir;
+M4x4D matProj;
+Vec3D vCamera = { 10.0f,50.0f,10.0f,1.0f };
+Vec3D vVelocity = { 0.0f,0.0f,0.0f,1.0f };
+Vec3D vLookDir;
 float fYaw;	
 float fPitch;	
 float fTheta;
 
-vec3d light_direction;
+Vec3D light_direction;
 
 Sprite sprTex1;
 float *pDepthBuffer;
 
-vec3d vLength = { 0.5f,1.8f,0.5f,1.0f };
+Vec3D vLength = { 0.5f,1.8f,0.5f,1.0f };
 Vector Cubes;
 Vec2 MouseBefore = { 0.0f,0.0f };
 
-mat4x4 matView;
+M4x4D matView;
 
 char OnGround = 0;
 int Mode = 0;
@@ -95,10 +95,10 @@ void World_SetX(Block* World,float x,float y,float z,Block b){
 	if(z<0.0f || z>=WORLD_DZ) return;
 	World[(int)x + (int)y * WORLD_DX + (int)z * WORLD_DX * WORLD_DY] = b;
 }
-Block World_Get(Block* World,vec3d p){
+Block World_Get(Block* World,Vec3D p){
 	return World_GetX(World,p.x,p.y,p.z);
 }
-void World_Set(Block* World,vec3d p,Block b){
+void World_Set(Block* World,Vec3D p,Block b){
 	World_SetX(World,p.x,p.y,p.z,b);
 }
 
@@ -120,16 +120,16 @@ int World_Height(Block* World,float x,float z){
 #define CUBE_SIDE_BOTTOM	5
 
 
-vec3d Neighbour_Side(int s){
+Vec3D Neighbour_Side(int s){
 	switch (s){
-	case CUBE_SIDE_SOUTH: 	return (vec3d){ 0.0f, 0.0f,-1.0f,1.0f };
-	case CUBE_SIDE_EAST: 	return (vec3d){ 1.0f, 0.0f, 0.0f,1.0f };
-	case CUBE_SIDE_NORTH: 	return (vec3d){ 0.0f, 0.0f, 1.0f,1.0f };
-	case CUBE_SIDE_WEST: 	return (vec3d){-1.0f, 0.0f, 0.0f,1.0f };
-	case CUBE_SIDE_TOP: 		return (vec3d){ 0.0f, 1.0f, 0.0f,1.0f };
-	case CUBE_SIDE_BOTTOM: 	return (vec3d){ 0.0f,-1.0f, 0.0f,1.0f };
+	case CUBE_SIDE_SOUTH: 	return (Vec3D){ 0.0f, 0.0f,-1.0f,1.0f };
+	case CUBE_SIDE_EAST: 	return (Vec3D){ 1.0f, 0.0f, 0.0f,1.0f };
+	case CUBE_SIDE_NORTH: 	return (Vec3D){ 0.0f, 0.0f, 1.0f,1.0f };
+	case CUBE_SIDE_WEST: 	return (Vec3D){-1.0f, 0.0f, 0.0f,1.0f };
+	case CUBE_SIDE_TOP: 		return (Vec3D){ 0.0f, 1.0f, 0.0f,1.0f };
+	case CUBE_SIDE_BOTTOM: 	return (Vec3D){ 0.0f,-1.0f, 0.0f,1.0f };
 	}
-	return (vec3d){ 0.0f,0.0f,0.0f,1.0f };
+	return (Vec3D){ 0.0f,0.0f,0.0f,1.0f };
 }
 unsigned char Block_Id(Block b,int s){
 	switch (b){
@@ -200,19 +200,19 @@ void World_Generate(Block* World,int dx,int dy,int dz){
 	}
 }
 
-void Triangle_CalcNorm(triangle* t){
-	vec3d normal, line1, line2;
+void Triangle_CalcNorm(Tri3D* t){
+	Vec3D normal, line1, line2;
 
-	line1 = vec3d_Sub(t->p[1],t->p[0]);
-	line2 = vec3d_Sub(t->p[2],t->p[0]);
+	line1 = Vec3D_Sub(t->p[1],t->p[0]);
+	line2 = Vec3D_Sub(t->p[2],t->p[0]);
 
-	normal = vec3d_CrossProduct(line1,line2);
+	normal = Vec3D_CrossProduct(line1,line2);
 
-	t->n = vec3d_Normalise(normal);
+	t->n = Vec3D_Normalise(normal);
 }
 
-void Cube_Set(triangle* trisout,vec3d p,vec3d d,Block id){
-	triangle tris[12] = {
+void Cube_Set(Tri3D* trisout,Vec3D p,Vec3D d,Block id){
+	Tri3D tris[12] = {
 	// SOUTH
 	{ 0.0f,0.0f,0.0f,1.0f,  0.0f,1.0f,0.0f,1.0f,  1.0f,1.0f,0.0f,1.0f,  0.0f,1.0f,1.0f,  0.0f,0.0f,1.0f,  1.0f,0.0f,1.0f,  0.0f,0.0f,0.0f,1.0f,  WHITE,Block_Id(id,CUBE_SIDE_SOUTH)},
 	{ 0.0f,0.0f,0.0f,1.0f,  1.0f,1.0f,0.0f,1.0f,  1.0f,0.0f,0.0f,1.0f,  0.0f,1.0f,1.0f,  1.0f,0.0f,1.0f,  1.0f,1.0f,1.0f,  0.0f,0.0f,0.0f,1.0f,  WHITE,Block_Id(id,CUBE_SIDE_SOUTH)},
@@ -235,33 +235,33 @@ void Cube_Set(triangle* trisout,vec3d p,vec3d d,Block id){
 
 	for(int i = 0;i<12;i++){
 		for(int j = 0;j<3;j++){
-			tris[i].p[j] = vec3d_Add(p,vec3d_Make(tris[i].p[j].x * d.x,tris[i].p[j].y * d.y,tris[i].p[j].z * d.z));
+			tris[i].p[j] = Vec3D_Add(p,Vec3D_Make(tris[i].p[j].x * d.x,tris[i].p[j].y * d.y,tris[i].p[j].z * d.z));
 		}
 		Triangle_CalcNorm(&tris[i]);
 
-		float dp = fmaxf(0.1f, vec3d_DotProduct(light_direction,tris[i].n));
+		float dp = fmaxf(0.1f, Vec3D_DotProduct(light_direction,tris[i].n));
 		tris[i].c = Pixel_Mul(tris[i].c,Pixel_toRGBA(dp,dp,dp,1.0f));
 		
 		trisout[i] = tris[i];
 	}
 }
-void MakeCube(vec3d p,vec3d d,Block id){
-	triangle tris[12];
+void MakeCube(Vec3D p,Vec3D d,Block id){
+	Tri3D tris[12];
 	Cube_Set(tris,p,d,id);
 
 	for(int i = 0;i<12;i++){
 		Vector_Push(&meshCube.tris,&tris[i]);
 	}
 }
-void MakePlane(vec3d p,vec3d d,int Plane,Block id){
-	triangle tris[12];
+void MakePlane(Vec3D p,Vec3D d,int Plane,Block id){
+	Tri3D tris[12];
 	Cube_Set(tris,p,d,id);
 
 	for(int i = Plane*2;i<(Plane+1)*2;i++){
 		Vector_Push(&meshCube.tris,&tris[i]);
 	}
 }
-void BuildCube(vec3d p,vec3d d,Block id){
+void BuildCube(Vec3D p,Vec3D d,Block id){
 	Vector_Push(&Cubes,(Rect3[]){ { p,d } });
 	MakeCube(p,d,id);
 }
@@ -276,11 +276,11 @@ void Mesh_Reload(){
 
 				if(b!=BLOCK_VOID){
 					for(int s = 0;s<6;s++){
-						vec3d p = { k,j,i,1.0f };
-						vec3d n = vec3d_Add(p,Neighbour_Side(s));
+						Vec3D p = { k,j,i,1.0f };
+						Vec3D n = Vec3D_Add(p,Neighbour_Side(s));
 						
 						if(World_Get(World,n)==BLOCK_VOID){
-							MakePlane(p,(vec3d){ 1.0f,1.0f,1.0f },s,b);
+							MakePlane(p,(Vec3D){ 1.0f,1.0f,1.0f },s,b);
 						}
 					}
 				}
@@ -293,25 +293,25 @@ int Cubes_Compare(const void* e1,const void* e2) {
 	Rect3 r1 = *(Rect3*)e1;
 	Rect3 r2 = *(Rect3*)e2;
 	
-	vec3d pos = vec3d_Add(vCamera,(vec3d){ vLength.x * 0.5f,vLength.y * 0.9f,vLength.z * 0.5f });
-	vec3d d1 = vec3d_Sub(r1.p,pos);
-    vec3d d2 = vec3d_Sub(r2.p,pos);
-	return vec3d_Length(d1) == vec3d_Length(d2) ? 0 : (vec3d_Length(d1) < vec3d_Length(d2) ? 1 : -1);
+	Vec3D pos = Vec3D_Add(vCamera,(Vec3D){ vLength.x * 0.5f,vLength.y * 0.9f,vLength.z * 0.5f });
+	Vec3D d1 = Vec3D_Sub(r1.p,pos);
+    Vec3D d2 = Vec3D_Sub(r2.p,pos);
+	return Vec3D_Length(d1) == Vec3D_Length(d2) ? 0 : (Vec3D_Length(d1) < Vec3D_Length(d2) ? 1 : -1);
 }
 void Cubes_Reload(Block* World){
 	Vector_Clear(&Cubes);
 
-	vec3d f = { (int)vCamera.x,(int)vCamera.y,(int)vCamera.z };
+	Vec3D f = { (int)vCamera.x,(int)vCamera.y,(int)vCamera.z };
 	for(int i = -2;i<2;i++){
 		for(int j = -2;j<2;j++){
 			for(int k = -2;k<2;k++){
-				vec3d n = { k,j,i };
-				vec3d r = vec3d_Add(f,n);
+				Vec3D n = { k,j,i };
+				Vec3D r = Vec3D_Add(f,n);
 
 				Block b = World_Get(World,r);
 
 				if(b!=BLOCK_VOID && b!=BLOCK_ERROR){
-					Vector_Push(&Cubes,(Rect3[]){ { r,(vec3d){ 1.0f,1.0f,1.0f } } });
+					Vector_Push(&Cubes,(Rect3[]){ { r,(Vec3D){ 1.0f,1.0f,1.0f } } });
 				}
 			}
 		}
@@ -320,7 +320,7 @@ void Cubes_Reload(Block* World){
 	qsort(Cubes.Memory,Cubes.size,Cubes.ELEMENT_SIZE,Cubes_Compare);
 }
 
-void World_Edit(Block* World,vec3d p,Block b){
+void World_Edit(Block* World,Vec3D p,Block b){
 	World_SetX(World,p.x,p.y,p.z,b);
 	Mesh_Reload();
 }
@@ -485,22 +485,22 @@ void TexturedTriangle(	int x1, int y1, float u1, float v1, float w1,
 }
 
 void Triangles_Project(){
-	Vector vecTrianglesToRaster = Vector_New(sizeof(triangle));
+	Vector vecTrianglesToRaster = Vector_New(sizeof(Tri3D));
 	for(int i = 0;i<meshCube.tris.size;i++){
-		triangle tri = *(triangle*)Vector_Get(&meshCube.tris,i);
+		Tri3D tri = *(Tri3D*)Vector_Get(&meshCube.tris,i);
 		
-		vec3d vCameraRay = vec3d_Sub(tri.p[0],vCamera);
-		if (vec3d_DotProduct(tri.n,vCameraRay) < 0.0f){
+		Vec3D vCameraRay = Vec3D_Sub(tri.p[0],vCamera);
+		if (Vec3D_DotProduct(tri.n,vCameraRay) < 0.0f){
 			tri.p[0] = Matrix_MultiplyVector(matView,tri.p[0]);
 			tri.p[1] = Matrix_MultiplyVector(matView,tri.p[1]);
 			tri.p[2] = Matrix_MultiplyVector(matView,tri.p[2]);
 			
 			int nClippedTriangles = 0;
-			triangle clipped[2];
-			nClippedTriangles = Triangle_ClipAgainstPlane(vec3d_Make(0.0f,0.0f,0.1f),vec3d_Make(0.0f,0.0f,1.0f),&tri,&clipped[0],&clipped[1]);
+			Tri3D clipped[2];
+			nClippedTriangles = Triangle_ClipAgainstPlane(Vec3D_Make(0.0f,0.0f,0.1f),Vec3D_Make(0.0f,0.0f,1.0f),&tri,&clipped[0],&clipped[1]);
 			
 			for (int n = 0; n < nClippedTriangles; n++){
-				triangle triProjected;
+				Tri3D triProjected;
 				triProjected.p[0] = Matrix_MultiplyVector(matProj,clipped[n].p[0]);
 				triProjected.p[1] = Matrix_MultiplyVector(matProj,clipped[n].p[1]);
 				triProjected.p[2] = Matrix_MultiplyVector(matProj,clipped[n].p[2]);
@@ -520,9 +520,9 @@ void Triangles_Project(){
 				triProjected.t[1].w = 1.0f / triProjected.p[1].w;
 				triProjected.t[2].w = 1.0f / triProjected.p[2].w;
 				
-				triProjected.p[0] = vec3d_Div(triProjected.p[0],triProjected.p[0].w);
-				triProjected.p[1] = vec3d_Div(triProjected.p[1],triProjected.p[1].w);
-				triProjected.p[2] = vec3d_Div(triProjected.p[2],triProjected.p[2].w);
+				triProjected.p[0] = Vec3D_Div(triProjected.p[0],triProjected.p[0].w);
+				triProjected.p[1] = Vec3D_Div(triProjected.p[1],triProjected.p[1].w);
+				triProjected.p[2] = Vec3D_Div(triProjected.p[2],triProjected.p[2].w);
 				
 				triProjected.p[0].x *= -1.0f;
 				triProjected.p[1].x *= -1.0f;
@@ -531,10 +531,10 @@ void Triangles_Project(){
 				triProjected.p[1].y *= -1.0f;
 				triProjected.p[2].y *= -1.0f;
 				
-				vec3d vOffsetView = vec3d_Make(1.0f,1.0f,0.0f);
-				triProjected.p[0] = vec3d_Add(triProjected.p[0],vOffsetView);
-				triProjected.p[1] = vec3d_Add(triProjected.p[1],vOffsetView);
-				triProjected.p[2] = vec3d_Add(triProjected.p[2],vOffsetView);
+				Vec3D vOffsetView = Vec3D_Make(1.0f,1.0f,0.0f);
+				triProjected.p[0] = Vec3D_Add(triProjected.p[0],vOffsetView);
+				triProjected.p[1] = Vec3D_Add(triProjected.p[1],vOffsetView);
+				triProjected.p[2] = Vec3D_Add(triProjected.p[2],vOffsetView);
 				triProjected.p[0].x *= 0.5f * (float)GetWidth();
 				triProjected.p[0].y *= 0.5f * (float)GetHeight();
 				triProjected.p[1].x *= 0.5f * (float)GetWidth();
@@ -553,26 +553,26 @@ void Triangles_Project(){
 	memset(pDepthBuffer,0,sizeof(float) * GetWidth() * GetHeight());
 		
 	for(int i = 0;i<vecTrianglesToRaster.size;i++){
-		triangle triToRaster = *(triangle*)Vector_Get(&vecTrianglesToRaster,i);
+		Tri3D triToRaster = *(Tri3D*)Vector_Get(&vecTrianglesToRaster,i);
 		
-		triangle clipped[2];
-		Vector listTriangles = Vector_New(sizeof(triangle));
+		Tri3D clipped[2];
+		Vector listTriangles = Vector_New(sizeof(Tri3D));
 		
 		Vector_Push(&listTriangles,&triToRaster);
 		int nNewTriangles = 1;
 		for (int p = 0; p < 4; p++){
 			int nTrisToAdd = 0;
 			while (nNewTriangles > 0){
-				triangle test = *(triangle*)Vector_Get(&listTriangles,0);
+				Tri3D test = *(Tri3D*)Vector_Get(&listTriangles,0);
 				Vector_Remove(&listTriangles,0);
 				nNewTriangles--;
 				
 				switch (p)
 				{
-				case 0:	nTrisToAdd = Triangle_ClipAgainstPlane((vec3d){ 0.0f, 0.0f, 0.0f }, 					(vec3d){ 0.0f, 1.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
-				case 1:	nTrisToAdd = Triangle_ClipAgainstPlane((vec3d){ 0.0f, (float)GetHeight() - 1, 0.0f }, 	(vec3d){ 0.0f,-1.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
-				case 2:	nTrisToAdd = Triangle_ClipAgainstPlane((vec3d){ 0.0f, 0.0f, 0.0f }, 					(vec3d){ 1.0f, 0.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
-				case 3:	nTrisToAdd = Triangle_ClipAgainstPlane((vec3d){ (float)GetWidth() - 1, 0.0f, 0.0f }, 	(vec3d){-1.0f, 0.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
+				case 0:	nTrisToAdd = Triangle_ClipAgainstPlane((Vec3D){ 0.0f, 0.0f, 0.0f }, 					(Vec3D){ 0.0f, 1.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
+				case 1:	nTrisToAdd = Triangle_ClipAgainstPlane((Vec3D){ 0.0f, (float)GetHeight() - 1, 0.0f }, 	(Vec3D){ 0.0f,-1.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
+				case 2:	nTrisToAdd = Triangle_ClipAgainstPlane((Vec3D){ 0.0f, 0.0f, 0.0f }, 					(Vec3D){ 1.0f, 0.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
+				case 3:	nTrisToAdd = Triangle_ClipAgainstPlane((Vec3D){ (float)GetWidth() - 1, 0.0f, 0.0f }, 	(Vec3D){-1.0f, 0.0f, 0.0f },&test,&clipped[0],&clipped[1]); break;
 				}
 				
 				for (int w = 0; w < nTrisToAdd; w++)
@@ -582,7 +582,7 @@ void Triangles_Project(){
 		}
 		
 		for (int i = 0;i<listTriangles.size;i++){
-			triangle t = *(triangle*)Vector_Get(&listTriangles,i);
+			Tri3D t = *(Tri3D*)Vector_Get(&listTriangles,i);
 
 			if(Mode==0){
 				TexturedTriangle(
@@ -615,7 +615,7 @@ void Triangles_Project(){
 	Vector_Free(&vecTrianglesToRaster);
 }
 
-void Stand(vec3d* Data){
+void Stand(Vec3D* Data){
 	Data->y = 0.0f;
 	OnGround = 1;
 }
@@ -642,10 +642,10 @@ void Setup(AlxWindow* w){
 	Menu_Set(1);
 	RGA_Get(6969);
 
-	meshCube = (mesh){ Vector_New(sizeof(triangle)) };
+	meshCube = (mesh){ Vector_New(sizeof(Tri3D)) };
 	Cubes = Vector_New(sizeof(Rect3));
 
-	light_direction = vec3d_Normalise(vec3d_Make(0.4f,0.5f,-0.6f));
+	light_direction = Vec3D_Normalise(Vec3D_Make(0.4f,0.5f,-0.6f));
 
 	pDepthBuffer = malloc(sizeof(float) * GetWidth() * GetHeight());
 	
@@ -716,9 +716,9 @@ void Update(AlxWindow* w){
 	//if(Stroke(ALX_KEY_R).RELEASED || Stroke(ALX_KEY_F).RELEASED)
 	//	vVelocity.y = 0.0f;
 
-	mat4x4 matCameraRot = Matrix_MakeRotationY(fYaw);
-	vec3d vForward = Matrix_MultiplyVector(matCameraRot,vec3d_Make(0.0f,0.0f,1.0f));
-	vec3d vLeft = vec3d_PerpY(vForward);
+	M4x4D matCameraRot = Matrix_MakeRotationY(fYaw);
+	Vec3D vForward = Matrix_MultiplyVector(matCameraRot,Vec3D_Make(0.0f,0.0f,1.0f));
+	Vec3D vLeft = Vec3D_PerpY(vForward);
 	
 	if(Stroke(ALX_KEY_W).DOWN){
 		vVelocity.x += vForward.x * 20.0f * w->ElapsedTime;
@@ -757,45 +757,45 @@ void Update(AlxWindow* w){
 	vVelocity.x = v.x;
 	vVelocity.z = v.y;
 
-	vVelocity = vec3d_Add(vVelocity,vec3d_Mul((vec3d){ 0.0f,-10.0f,0.0f,1.0f },w->ElapsedTime));
-	vCamera = vec3d_Add(vCamera,vec3d_Mul(vVelocity,w->ElapsedTime));
+	vVelocity = Vec3D_Add(vVelocity,Vec3D_Mul((Vec3D){ 0.0f,-10.0f,0.0f,1.0f },w->ElapsedTime));
+	vCamera = Vec3D_Add(vCamera,Vec3D_Mul(vVelocity,w->ElapsedTime));
 
 	Cubes_Reload(World);
 	OnGround = 0;
 	for(int i = 0;i<Cubes.size;i++){
-		vec3d pos = { vLength.x * 0.5f,vLength.y * 0.9f,vLength.z * 0.5f };
+		Vec3D pos = { vLength.x * 0.5f,vLength.y * 0.9f,vLength.z * 0.5f };
 
 		Rect3 r1 = *(Rect3*)Vector_Get(&Cubes,i);
-		Rect3 r2 = (Rect3){ vec3d_Sub(vCamera,pos),vLength };
+		Rect3 r2 = (Rect3){ Vec3D_Sub(vCamera,pos),vLength };
 		Rect3_Static(&r2,r1,&vVelocity,(void (*[])(void*)){ NULL,NULL,NULL,NULL,NULL,(void*)Stand });
-		vCamera = vec3d_Add(r2.p,pos);
+		vCamera = Vec3D_Add(r2.p,pos);
 	}
 
 	float Border = F32_PI * 0.5f - 0.00001;
 	if(fPitch<-Border) fPitch = -Border;
 	if(fPitch>Border) fPitch = Border;
 
-	vec3d vUp = vec3d_Make(0.0f,1.0f,0.0f);
-	vec3d vTarget = vec3d_Make(0.0f,0.0f,1.0f);
-	mat4x4 matCameraRotX = Matrix_MakeRotationX(fPitch);
+	Vec3D vUp = Vec3D_Make(0.0f,1.0f,0.0f);
+	Vec3D vTarget = Vec3D_Make(0.0f,0.0f,1.0f);
+	M4x4D matCameraRotX = Matrix_MakeRotationX(fPitch);
 	vLookDir = Matrix_MultiplyVector(matCameraRotX,vTarget);
 	vLookDir = Matrix_MultiplyVector(matCameraRot,vLookDir);
 	
-	vTarget = vec3d_Add(vCamera, vLookDir);
-	mat4x4 matCamera = Matrix_PointAt(vCamera, vTarget, vUp);
+	vTarget = Vec3D_Add(vCamera, vLookDir);
+	M4x4D matCamera = Matrix_PointAt(vCamera, vTarget, vUp);
 	matView = Matrix_QuickInverse(matCamera);
 
 	if(Stroke(ALX_MOUSE_L).PRESSED){
 		Vec3 c = (Vec3){ vCamera.x,vCamera.y,vCamera.z };
 		RayCast_TileMap(World,(void*)World_Void,c,(Vec3){ vLookDir.x,vLookDir.y,vLookDir.z },0.01f,4.0f,&c);
 		if(c.x!=vCamera.x || c.y!=vCamera.y || c.z!=vCamera.z)
-			World_Edit(World,(vec3d){ c.x,c.y,c.z },BLOCK_VOID);
+			World_Edit(World,(Vec3D){ c.x,c.y,c.z },BLOCK_VOID);
 	}
 	if(Stroke(ALX_MOUSE_R).PRESSED){
 		Vec3 c = (Vec3){ vCamera.x,vCamera.y,vCamera.z };
 		RayCast_TileMap_N(World,(void*)World_Void,c,(Vec3){ vLookDir.x,vLookDir.y,vLookDir.z },0.01f,4.0f,&c);
 		if(c.x!=vCamera.x || c.y!=vCamera.y || c.z!=vCamera.z)
-			World_Edit(World,(vec3d){ c.x,c.y,c.z },BLOCK_DIRT);
+			World_Edit(World,(Vec3D){ c.x,c.y,c.z },BLOCK_DIRT);
 	}
 
 	Clear(LIGHT_BLUE);
